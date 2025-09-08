@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README.md</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="项目说明">项目说明</h1>
+<p>本项目包含两个 Windows 可执行程序：</p>
+<ul>
+<li>test1.exe：交互式读取输入；输入 <code>Dian</code> 输出 <code>2002</code>，输入 <code>Quit</code> 退出，其余输入输出 <code>Error</code>。</li>
+<li>test2.exe：从 UTF-8 <code>.txt</code> 文件中读取 <code>key:value</code> 键值对，交互查询；输入 <code>Quit</code> 退出，找不到键输出 <code>Error</code>。</li>
+</ul>
+<h2 id="目录结构">目录结构</h2>
+<ul>
+<li><code>test1/main.c</code></li>
+<li><code>test2/main.c</code></li>
+</ul>
+<h2 id="windows-下编译">Windows 下编译</h2>
+<p>推荐安装 <code>mingw-w64</code>（包含 <code>gcc</code>）。打开 PowerShell 或 CMD，进入仓库根目录执行：</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token comment"># 编译 test1</span>
+gcc -O2 -Wall -o test1/test1.exe test1/main.c
+
+<span class="token comment"># 编译 test2</span>
+gcc -O2 -Wall -o test2/test2.exe test2/main.c
+</code></pre>
+<p>编译成功后将分别生成：<code>test1/test1.exe</code> 与 <code>test2/test2.exe</code>。</p>
+<h2 id="运行示例">运行示例</h2>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token comment"># test1 交互示例（逐行输入）</span>
+./test1/test1.exe
+Dian
+2002
+abc
+Error
+Quit
+
+<span class="token comment"># test2 需提供一个 UTF-8 文本文件</span>
+<span class="token comment"># 假设 data.txt 内容：</span>
+<span class="token comment"># Robot:RL</span>
+<span class="token comment"># sdf:vdv</span>
+<span class="token comment"># sad:dfdsv</span>
+<span class="token comment"># eff:vsad</span>
+./test2/test2.exe data.txt
+Robot
+RL
+unknown
+Error
+Quit
+</code></pre>
+<h2 id="注意事项与边界">注意事项与边界</h2>
+<ul>
+<li>输入严格区分大小写（按题意匹配）。</li>
+<li><code>test2</code> 会修剪键和值两端空白；非法行（无冒号、空键或空值）将被跳过。</li>
+<li>对于超长行（&gt; 1023 字符），会被截断并可能解析失败（返回 Error）。</li>
+<li>若字典非常大，当前实现使用动态数组线性查找，建议改为哈希表优化。</li>
+</ul>
+</div>
+</body>
+
+</html>
