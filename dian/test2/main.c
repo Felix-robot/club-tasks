@@ -158,6 +158,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	printf("Please enter keys to look up values (Quit to exit):\n");
+
 	// 可选：提供文件则加载；失败仅告警，继续交互
 	if (argc >= 2) {
 		if (!load_file(argv[1], &dict)) {

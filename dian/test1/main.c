@@ -28,6 +28,10 @@ int main(void) {
 	// 选择一个适中的缓冲区大小，足以容纳常见交互输入
 	char input_buffer[256];
 
+
+	// 提示用户输入
+	printf("Enter commands (Dian to get 2002, Quit to exit):\n");
+
 	// 交互主循环，直到用户输入 "Quit"
 	for (;;) {
 		if (fgets(input_buffer, (int)sizeof(input_buffer), stdin) == NULL) {
