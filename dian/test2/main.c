@@ -4,20 +4,17 @@
 #include <ctype.h>
 
 // 程序功能：
-// - 从 UTF-8 编码的 .txt 文件读取键值对，每行格式为 key:value
-// - 解析并存储到内存（简单数组动态扩容）
-// - 交互式读取用户输入 key，打印对应 value；不存在则输出 "Error"
-// - 输入 "Quit" 时退出
+// - 自动查找同目录下的 data.txt 文件（UTF-8 编码）
+// - 解析键值对，每行格式为 key:value
+// - 交互式查询：输入键返回值，不存在返回 "Error"，输入 "Quit" 退出
 //
-// 设计与鲁棒性：
-// - 使用 fgets 逐行读取，避免缓冲区溢出
-// - 自动跳过空行与无冒号或冒号在首/尾的非法行
-// - 修剪键和值两端的空白字符（空格、\t、\r、\n 等）
-// - 大小写敏感匹配键
-// - 若文件较大，简单动态数组可能多次扩容；对于超大文件建议换为哈希表
+// 文件解析规则：
+// - 键：长度 1-10 字符，可含字母、数字、下划线，不含空格
+// - 跳过空行和错误行（无冒号、含空格键等）
+// - 重复键：保留首次出现，忽略后续重复
 //
 // 使用方法：
-// Windows 示例：test2.exe data.txt
+// Windows 示例：test2.exe（自动查找 data.txt）
 
 typedef struct {
 	char *key;
@@ -106,13 +103,15 @@ static const char* pair_array_find(const PairArray *arr, const char *key) {
 	return NULL;
 }
 
-// 校验键：长度 1..10，且不包含任意空白字符（仅用于文件解析）
+// 校验键：长度 1-10，仅含字母、数字、下划线，不含空格
 static int is_valid_key(const char *key) {
 	if (!key) return 0;
 	size_t len = strlen(key);
 	if (len == 0 || len > 10) return 0;
 	for (size_t i = 0; i < len; ++i) {
-		if (isspace((unsigned char)key[i])) return 0;
+		unsigned char c = (unsigned char)key[i];
+		// 允许：字母、数字、下划线
+		if (!(isalnum(c) || c == '_')) return 0;
 	}
 	return 1;
 }
@@ -124,24 +123,31 @@ static int load_file(const char *path, PairArray *out) {
 	while (fgets(line, sizeof(line), fp)) {
 		strip_newline(line);
 		strip_utf8_bom(line);
+		
 		// 跳过空行
 		char *cursor = line;
 		while (*cursor && isspace((unsigned char)*cursor)) cursor++;
 		if (*cursor == '\0') continue;
 
 		char *colon = strchr(line, ':');
-		if (!colon) continue; // 无冒号，跳过
-		// 将冒号左侧作为 key，右侧作为 value
+		if (!colon) continue; // 无冒号，跳过错误行
+		
+		// 分割键值
 		*colon = '\0';
 		char *key = line;
 		char *value = colon + 1;
 		trim(key);
 		trim(value);
-		if (*key == '\0' || *value == '\0') continue; // 非法行
-		// 校验键：长度<=10 且不含空白
+		
+		// 检查键值非空
+		if (*key == '\0' || *value == '\0') continue;
+		
+		// 校验键格式：长度1-10，仅含字母数字下划线
 		if (!is_valid_key(key)) continue;
+		
 		// 忽略重复键（保留首次出现）
 		if (pair_array_find(out, key) != NULL) continue;
+		
 		if (!pair_array_push(out, key, value)) {
 			fclose(fp);
 			return 0;
@@ -160,11 +166,10 @@ int main(int argc, char **argv) {
 
 	printf("Please enter keys to look up values (Quit to exit):\n");
 
-	// 可选：提供文件则加载；失败仅告警，继续交互
-	if (argc >= 2) {
-		if (!load_file(argv[1], &dict)) {
-			fprintf(stderr, "Warning: failed to open or parse file: %s\n", argv[1]);
-		}
+	// 自动查找同目录下的 data.txt
+	const char *data_file = "data.txt";
+	if (!load_file(data_file, &dict)) {
+		fprintf(stderr, "Warning: failed to open or parse file: %s\n", data_file);
 	}
 
 	char input[512];
@@ -175,7 +180,7 @@ int main(int argc, char **argv) {
 		trim(input);
 		// 空行直接跳过
 		if (input[0] == '\0') { continue; }
-		// 交互阶段不再限制键格式，仅根据是否存在返回
+		// 查询键值
 		const char *val = pair_array_find(&dict, input);
 		if (val) {
 			printf("%s\n", val);
