@@ -1,6 +1,6 @@
 # 项目说明
 
-本项目包含两个 Windows 可执行程序：
+本项目(除了level1、level2文件夹之外，原谅我的史山)包含两个 Windows 可执行程序：
 
 - test1.exe：交互式读取输入；输入 `Dian` 输出 `2002`，输入 `Quit` 退出，其余输入输出 `Error`。
 - test2.exe：从 UTF-8 `.txt` 文件中读取 `key:value` 键值对，交互查询；输入 `Quit` 退出，找不到键输出 `Error`。
